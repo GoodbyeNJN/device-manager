@@ -35,6 +35,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/config/tsconfig.lib.json"
       }
+    },
+    "define": {
+      "type": "library",
+      "root": "libs/define",
+      "entryFile": "index",
+      "sourceRoot": "libs/define/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/define/tsconfig.lib.json"
+      }
     }
   }
 }

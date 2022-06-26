@@ -77,7 +77,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1"
+      "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
+      "^@app/define(|/.*)$": "<rootDir>/libs/define/src/$1"
     },
     "setupFilesAfterEnv": [
       "jest-extended/all",
