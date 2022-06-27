@@ -36,4 +36,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MESSAGE: 'Build: ({sha}) {msg}'
           SQUASH_HISTORY: true
-          CLEAR_GLOBS_FILE: '!.env.example'
+          CLEAR_GLOBS_FILE: '.deploy-ignore'
