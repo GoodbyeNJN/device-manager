@@ -7,10 +7,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
+    "build": "concurrently \"nest build main\" \"nest build wake\"",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
-    "start": "nest start",
-    "start:all": "concurrently --kill-others \"nest start main --watch\" \"nest start wake --watch\"",
+    "start": "concurrently --kill-others \"nest start main --watch\" \"nest start wake --watch\"",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
