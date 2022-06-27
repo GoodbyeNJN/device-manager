@@ -34,4 +34,9 @@ jobs:
           BRANCH: deploy
           FOLDER: dist
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MESSAGE: "Build: ({sha}) {msg}" # The commit message
+          MESSAGE: 'Build: ({sha}) {msg}'
+          SQUASH_HISTORY: true
+          CLEAR_GLOBS_FILE: |
+            **/*
+            !.git
+            !.env.example
