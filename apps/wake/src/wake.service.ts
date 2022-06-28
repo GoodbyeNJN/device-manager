@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { SerialPort } from 'serialport';
 import { setTimeout } from 'timers/promises';
 import { ConfigService } from '@app/config';
@@ -42,6 +46,8 @@ export class WakeService {
     await this.writeToSerialPort(command.disconnect);
 
     this.serialPort.close();
+
+    Logger.log('wake up through serial port success');
 
     return 'ok';
   }
