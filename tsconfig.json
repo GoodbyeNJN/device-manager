@@ -19,6 +19,18 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "paths": {
+      "@app/main": [
+        "apps/main/src"
+      ],
+      "@app/main/*": [
+        "apps/main/src/*"
+      ],
+      "@app/wake": [
+        "apps/wake/src"
+      ],
+      "@app/wake/*": [
+        "apps/wake/src/*"
+      ],
       "@app/config": [
         "libs/config/src"
       ],

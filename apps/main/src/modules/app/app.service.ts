@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { MessagePatterns } from '@app/define';
 import { ClientProxy } from '@nestjs/microservices';
-import { Clients } from './define';
+import { MessagePatterns } from '@app/define';
+import { Clients } from '@app/main/define';
 
 import type { Payloads, Results } from '@app/define';
 

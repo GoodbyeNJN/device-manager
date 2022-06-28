@@ -1,10 +1,10 @@
+import { SerialPort } from 'serialport';
+import { setTimeout } from 'timers/promises';
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { SerialPort } from 'serialport';
-import { setTimeout } from 'timers/promises';
 import { ConfigService } from '@app/config';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@app/config';
+import { Clients } from '@app/main/define';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Clients } from './define';
 
 @Module({
   imports: [ConfigModule],

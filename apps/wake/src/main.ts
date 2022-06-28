@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@app/config';
-import { WakeModule } from './wake.module';
+import { WakeModule } from './modules/wake';
 
 const bootstrap = async () => {
   // TODO: Remove when the following is fixed https://github.com/nestjs/nest/issues/2343
