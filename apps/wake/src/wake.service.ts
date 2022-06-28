@@ -41,6 +41,8 @@ export class WakeService {
     await setTimeout(200);
     await this.writeToSerialPort(command.disconnect);
 
+    this.serialPort.close();
+
     return 'ok';
   }
 }
