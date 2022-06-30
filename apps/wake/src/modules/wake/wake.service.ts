@@ -1,6 +1,10 @@
 import { SerialPort } from 'serialport';
 import { setTimeout } from 'timers/promises';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@app/config';
 
 @Injectable()
@@ -26,6 +30,9 @@ export class WakeService {
 
     try {
       this.serialPort = new SerialPort({ path, baudRate });
+      this.serialPort.on('error', (error) => {
+        Logger.error(error);
+      });
     } catch (error) {
       throw new InternalServerErrorException('open serial port error');
     }
@@ -36,10 +43,12 @@ export class WakeService {
       await this.writeToSerialPort(command.connect);
       await setTimeout(200);
       await this.writeToSerialPort(command.disconnect);
+      Logger.log('write to serial port success');
     } catch (error) {
       throw new InternalServerErrorException('write to serial port error');
     } finally {
       this.serialPort.close();
+      Logger.log('serial port closed');
     }
 
     return 'ok';
