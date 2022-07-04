@@ -1,0 +1,6 @@
+**/*
+!.git
+!.github
+!.env.example
+!package.json
+!yarn.lock
