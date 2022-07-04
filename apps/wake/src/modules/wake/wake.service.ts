@@ -38,10 +38,10 @@ export class WakeService {
     }
 
     try {
-      await this.writeToSerialPort(command.test);
-      await setTimeout(500);
+      // await this.writeToSerialPort(command.test);
+      // await setTimeout(500);
       await this.writeToSerialPort(command.connect);
-      await setTimeout(200);
+      await setTimeout(300);
       await this.writeToSerialPort(command.disconnect);
       Logger.log('write to serial port success');
     } catch (error) {
