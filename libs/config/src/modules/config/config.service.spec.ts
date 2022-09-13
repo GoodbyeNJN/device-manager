@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule as EnvConfigModule } from '@nestjs/config';
 import { ConfigService } from './config.service';
-import { getDefaultConfig } from './default-config';
+import { getDefaultConfig } from './configuration';
 
 describe('ConfigService', () => {
   let service: ConfigService;
