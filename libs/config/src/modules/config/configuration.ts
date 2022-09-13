@@ -1,6 +1,6 @@
 import type { Config } from './config.interface';
 
-export const defaultConfig: Config = {
+export const getDefaultConfig = (): Config => ({
   main: {
     listen: {
       host: process.env.MAIN_LISTEN_HOST || '0.0.0.0',
@@ -25,6 +25,4 @@ export const defaultConfig: Config = {
       baudRate: 9600,
     },
   },
-};
-
-export const getDefaultConfig = () => defaultConfig;
+});
