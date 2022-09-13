@@ -41,4 +41,9 @@ jobs:
       - name: Webhook Action
         uses: joelwmale/webhook-action@2.1.0
         with:
-          url: ${{ secrets.WEBHOOK_URL }}
+          url: ${{ secrets.MAIN_SERVICE_WEBHOOK_URL }}
+
+      - name: Webhook Action
+        uses: joelwmale/webhook-action@2.1.0
+        with:
+          url: ${{ secrets.WAKE_SERVICE_WEBHOOK_URL }}
