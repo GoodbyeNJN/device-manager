@@ -43,7 +43,13 @@ jobs:
         with:
           url: ${{ secrets.MAIN_SERVICE_WEBHOOK_URL }}
 
-      - name: Webhook Action
-        uses: joelwmale/webhook-action@2.1.0
-        with:
-          url: ${{ secrets.WAKE_SERVICE_WEBHOOK_URL }}
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.WAKE_SERVICE_WEBHOOK_URL }}
+          webhook_secret: "test"
+
+      # - name: Webhook Action
+      #   uses: joelwmale/webhook-action@2.1.0
+      #   with:
+      #     url: ${{ secrets.WAKE_SERVICE_WEBHOOK_URL }}
