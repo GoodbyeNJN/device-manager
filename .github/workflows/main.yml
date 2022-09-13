@@ -39,6 +39,8 @@ jobs:
           CLEAR_GLOBS_FILE: '.github/workflows/.deploy-ignore'
 
   hook:
+    runs-on: ubuntu-latest
+
     steps:
       - name: Webhook Action
         uses: joelwmale/webhook-action@2.1.0
