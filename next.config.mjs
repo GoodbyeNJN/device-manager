@@ -1,24 +1,29 @@
-// @ts-check
+import AutoImport from "unplugin-auto-import/webpack";
+import { $, log } from "zx";
 
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
- * This is especially useful for Docker builds.
- */
-!process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
+$.log = entry => entry.kind !== "cmd" && log(entry);
+await $`npx tsx ./env`;
 
 /** @type {import("next").NextConfig} */
 const config = {
-  reactStrictMode: true,
+    reactStrictMode: true,
+    swcMinify: true,
 
-  /**
-   * If you have the "experimental: { appDir: true }" setting enabled, then you
-   * must comment the below `i18n` config out.
-   *
-   * @see https://github.com/vercel/next.js/issues/41980
-   */
-  i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
-  },
+    webpack: config => {
+        config.plugins.push(
+            AutoImport({
+                dts: "./types/auto-imports.d.ts",
+
+                imports: [
+                    "react",
+                    { clsx: [["default", "cx"]] },
+                    { "@/env": ["isServerEnv", "isDevEnv", "isProdEnv", "env"] },
+                ],
+            }),
+        );
+
+        return config;
+    },
 };
+
 export default config;
