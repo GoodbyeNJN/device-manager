@@ -1,18 +1,69 @@
-# Create T3 App
+# 设备管理器
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## 项目介绍
 
-## What's next? How do I make an app with this?
+设备管理器是一个基于 [T3 Stack](https://create.t3.gg/) 的项目，用于管理内网设备。包括设备的增删改查、设备的在线状态、设备的唤醒等功能。
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## 项目结构
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+```bash
+.
+├── auth # next-auth 的配置
+├── components
+├── env # 环境变量定义及校验
+├── hooks
+├── middleware.ts # next 中间件，用于未登录拦截
+├── next.config.mjs # next 配置
+├── package.json
+├── pages
+│   ├── api
+│   │   ├── auth
+│   │   │   └── [...nextauth].ts # next-auth 三连冠接口
+│   │   └── trpc
+│   │       └── [trpc].ts # trpc 相关接口
+│   ├── _app.tsx
+│   ├── index.tsx # 首页
+│   └── login.tsx # 登录页面
+├── pnpm-lock.yaml
+├── postcss.config.cjs
+├── prisma # prisma 相关配置
+│   └── schema.prisma # 数据库表结构
+├── public
+├── README.md
+├── server
+│   ├── context.ts # 上下文定义
+│   ├── db.ts # 数据库连接
+│   ├── error.ts # 错误类型定义
+│   ├── index.ts
+│   ├── init.ts # 初始化 trpc
+│   ├── middleware.ts # 中间件
+│   ├── procedure.ts # tprc 处理过程
+│   └── routers # 路由定义
+├── share # 公共库
+│   ├── commands.ts # 单片机命令定义
+│   └── trpc.ts # trpc 客户端，用于前端调用
+├── styles
+├── tailwind.config.cjs
+├── tsconfig.json
+├── types
+└── utils # 工具库
+```
 
--   [Next.js](https://nextjs.org)
--   [NextAuth.js](https://next-auth.js.org)
--   [Prisma](https://prisma.io)
--   [Tailwind CSS](https://tailwindcss.com)
--   [tRPC](https://trpc.io)
+## 项目启动
+
+```bash
+# 安装依赖
+pnpm install
+
+# 创建数据库
+pnpm exec prisma push dev
+
+# 创建环境变量
+cp .env.example .env
+
+# 启动项目
+pnpm dev
+```
 
 ## Learn More
 
@@ -22,7 +73,3 @@ To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the fo
 -   [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
 
 You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.

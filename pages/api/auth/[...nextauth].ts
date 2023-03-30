@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
 
-import { authOptions } from "@/share/options";
+import { options } from "@/auth/options";
 
-export default NextAuth(authOptions);
+export default NextAuth(options);

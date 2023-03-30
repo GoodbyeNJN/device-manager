@@ -2,7 +2,7 @@ import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
-import { trpc } from "@/share/trpc";
+import { trpcNextClient } from "@/share/trpc";
 import "@/styles/globals.css";
 
 export interface AppProps {
@@ -22,4 +22,4 @@ const App: AppType<AppProps> = props => {
     );
 };
 
-export default trpc.withTRPC(App);
+export default trpcNextClient.withTRPC(App);

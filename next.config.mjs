@@ -16,6 +16,7 @@ const config = {
 
                 imports: [
                     "react",
+                    { react: [["*", "React"]] },
                     { clsx: [["default", "cx"]] },
                     { "@/env": ["isServerEnv", "isDevEnv", "isProdEnv", "env"] },
                 ],

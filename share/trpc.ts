@@ -1,4 +1,4 @@
-import { httpBatchLink, loggerLink } from "@trpc/client";
+import { createTRPCProxyClient, httpBatchLink, httpLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import superjson from "superjson";
 
@@ -16,13 +16,13 @@ const getBaseUrl = () => {
     }
 
     // dev SSR should use localhost
-    return `http://wsl.lan:${process.env.PORT ?? 3000}`;
+    return `http://localhost:${process.env.PORT ?? 3000}`;
 };
 
 /**
  * A set of type-safe react-query hooks for your tRPC API.
  */
-export const trpc = createTRPCNext<Router>({
+export const trpcNextClient = createTRPCNext<Router>({
     config: () => ({
         transformer: superjson,
 
@@ -49,4 +49,19 @@ export const trpc = createTRPCNext<Router>({
      * @see https://trpc.io/docs/nextjs#ssr-boolean-default-false
      */
     ssr: false,
+});
+
+export const trpcStandaloneClient = createTRPCProxyClient<Router>({
+    transformer: superjson,
+
+    links: [
+        loggerLink({
+            enabled: opts =>
+                isDevEnv || (opts.direction === "down" && opts.result instanceof Error),
+        }),
+
+        httpLink({
+            url: `http://localhost:${process.env.PORT ?? 3000}/api/trpc`,
+        }),
+    ],
 });

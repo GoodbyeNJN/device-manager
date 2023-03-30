@@ -1,10 +1,8 @@
 import { withAuth } from "next-auth/middleware";
 
-import { authPages } from "@/share/pages";
+import { pages } from "@/auth/pages";
 
-export default withAuth({
-    pages: authPages,
-});
+export default withAuth({ pages });
 
 export const config = {
     matcher: [

@@ -43,4 +43,14 @@ model User {
     avatar   String?
     accounts Account[]
     sessions Session[]
+    Device   Device[]
+}
+
+model Device {
+    id     String  @id @default(cuid())
+    name   String?
+    userId String  @map("user_id")
+    host   String
+    port   Int
+    user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

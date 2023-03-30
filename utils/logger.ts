@@ -24,7 +24,7 @@ const createLogger =
             date = dayjs().format("YYYY-MM-DD HH:mm:ss");
         }
 
-        console.log(`[${date}] [${colorize(level)}]:`, ...message);
+        console.log(`[${chalk.green(date)}] [${colorize(level)}]:`, ...message);
     };
 
 export const logger = {

@@ -1,9 +1,9 @@
 import { t } from "./init";
-import { isAuthed, loggerMiddleware } from "./middleware";
+import { isAuthorized, loggerMiddleware } from "./middleware";
 
-const commonProcedure = t.procedure;
-// const commonProcedure = t.procedure.use(loggerMiddleware);
+// const commonProcedure = t.procedure;
+const commonProcedure = t.procedure.use(loggerMiddleware);
 
 export const publicProcedure = commonProcedure;
 
-export const protectedProcedure = commonProcedure.use(isAuthed);
+export const protectedProcedure = commonProcedure.use(isAuthorized);

@@ -1,13 +1,13 @@
-import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 
 import { logger } from "@/utils";
 
+import { UnauthorizedError } from "./error";
 import { t } from "./init";
 
-export const isAuthed = t.middleware(({ ctx, next }) => {
+export const isAuthorized = t.middleware(({ ctx, next }) => {
     if (!ctx.session?.user) {
-        throw new TRPCError({ code: "UNAUTHORIZED" });
+        throw UnauthorizedError;
     }
 
     return next({
@@ -18,14 +18,24 @@ export const isAuthed = t.middleware(({ ctx, next }) => {
 });
 
 export const loggerMiddleware = t.middleware(async options => {
-    const { type, path, next } = options;
+    const { type, path, ctx, input, meta, rawInput, next } = options;
     const date = dayjs();
 
-    const result = await next();
+    try {
+        const result = await next();
 
-    const duration = dayjs().diff(date, "ms");
+        const duration = dayjs().diff(date, "ms");
+        const message = `${type} - ${path} - ${duration}ms`;
 
-    logger.info(date, `${type} - ${path} - ${duration}ms`, result);
+        result.ok ? logger.info(date, message) : logger.error(date, message);
 
-    return result;
+        return result;
+    } catch (error) {
+        const duration = dayjs().diff(date, "ms");
+        const message = `${type} - ${path} - ${duration}ms`;
+
+        logger.error(date, message);
+
+        throw error;
+    }
 });
