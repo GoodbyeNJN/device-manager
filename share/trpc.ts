@@ -15,8 +15,9 @@ const getBaseUrl = () => {
         return `https://${process.env.VERCEL_URL}`;
     }
 
-    // dev SSR should use localhost
-    return `http://localhost:${process.env.PORT ?? 3000}`;
+    // dev SSR should use env var
+    const url = new URL(process.env.NEXTAUTH_URL || window.location.href);
+    return url.origin;
 };
 
 /**
