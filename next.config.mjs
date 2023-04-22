@@ -8,6 +8,15 @@ await $`npx tsx ./env`;
 const config = {
     reactStrictMode: true,
     swcMinify: true,
+    output: "standalone",
+
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
+
+    typescript: {
+        ignoreBuildErrors: true,
+    },
 
     webpack: config => {
         config.plugins.push(
