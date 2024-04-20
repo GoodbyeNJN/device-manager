@@ -1,8 +1,9 @@
-import { type NextPage } from "next";
 import Head from "next/head";
 
-import { CreateDeviceModal, DeviceList, NavBar, UserInfoModal } from "@/components";
+import { CreateDeviceModal, DeviceList, NavBar } from "@/components";
 import { api } from "@/hooks";
+
+import type { NextPage } from "next";
 
 export interface ModalProps {
     show: boolean;
@@ -10,7 +11,6 @@ export interface ModalProps {
 }
 
 const Home: NextPage = () => {
-    const [showUserInfoModal, setShowUserInfoModal] = useState(false);
     const [showDeviceModal, setShowDeviceModal] = useState(false);
     const { refetch, data, isError, isLoading } = api.device.list.useQuery(
         {},
@@ -24,10 +24,7 @@ const Home: NextPage = () => {
             </Head>
 
             <main className="relative h-full w-full">
-                <NavBar
-                    setShowUserInfoModal={setShowUserInfoModal}
-                    setShowDeviceModal={setShowDeviceModal}
-                />
+                <NavBar setShowDeviceModal={setShowDeviceModal} />
 
                 <DeviceList
                     devices={data}
@@ -36,8 +33,6 @@ const Home: NextPage = () => {
                     onRefresh={refetch}
                 />
             </main>
-
-            <UserInfoModal show={showUserInfoModal} setShow={setShowUserInfoModal} />
 
             <CreateDeviceModal
                 show={showDeviceModal}

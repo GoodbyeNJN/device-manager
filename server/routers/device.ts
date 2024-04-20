@@ -1,33 +1,44 @@
 import { z } from "zod";
 
-import { InternalServerError, NotFoundError } from "@/server/error";
-import { t } from "@/server/init";
-import { protectedProcedure } from "@/server/procedure";
-import { relayCommand } from "@/share/commands";
-import { setTimeout, Socket } from "@/utils";
+import { setTimeout } from "@/utils";
+import { Socket } from "@/utils/socket";
 
-export const deviceRouter = t.router({
-    list: protectedProcedure
+import {
+    CHECK_COMMAND,
+    CONNECT_COMMAND,
+    CONNECT_STATUS,
+    DISCONNECT_COMMAND,
+    DISCONNECT_STATUS,
+} from "../constants";
+import { InternalServerError, NotFoundError } from "../error";
+import { procedure } from "../procedures";
+import { trpc } from "../trpc";
+
+import type { DeviceEntity } from "@/db";
+
+export const deviceRouter = trpc.router({
+    list: procedure.protected
         .input(
             z.object({
-                id: z.string().optional(),
                 skip: z.number().optional(),
                 take: z.number().optional(),
             }),
         )
         .query(async ({ input, ctx }) => {
-            const { id, skip, take } = input;
+            const { skip, take } = input;
 
-            const devices = await ctx.prisma.device.findMany({
-                where: { id, userId: ctx.session.user.id },
-                skip,
-                take,
-            });
+            const devices = R.pipe(
+                ctx.db.data.devices,
+                R.filter(device => device.userId === ctx.user.id),
+                R.drop(skip || 0),
+                R.take(take || Infinity),
+                R.map(({ id, name, host, port }) => ({ id, name, host, port })),
+            );
 
             return devices;
         }),
 
-    create: protectedProcedure
+    create: procedure.protected
         .input(
             z.object({
                 name: z.string(),
@@ -38,14 +49,24 @@ export const deviceRouter = t.router({
         .mutation(async ({ input, ctx }) => {
             const { name, host, port } = input;
 
-            const device = await ctx.prisma.device.create({
-                data: { name, host, port, userId: ctx.session.user.id },
+            const device: DeviceEntity = {
+                id: ctx.db.generateId(),
+                name,
+                host,
+                port,
+                userId: ctx.user.id,
+            };
+
+            await ctx.db.update(data => {
+                data.devices.push(device);
             });
 
-            return device;
+            const { userId: _userId, ...rest } = device;
+
+            return rest;
         }),
 
-    update: protectedProcedure
+    update: procedure.protected
         .input(
             z.object({
                 id: z.string(),
@@ -55,25 +76,40 @@ export const deviceRouter = t.router({
             }),
         )
         .mutation(async ({ input, ctx }) => {
-            console.log("input:", input);
             const { id, name, host, port } = input;
 
-            const device = await ctx.prisma.device.findUnique({
-                where: { id },
-            });
-            if (!device || device.userId !== ctx.session.user.id) {
+            const indexed = R.pipe(
+                ctx.db.data.devices,
+                R.map.indexed((device, index) => ({ index, device })),
+                R.find(({ device }) => device.id === id),
+            );
+            if (!indexed || indexed?.device.userId !== ctx.user.id) {
                 throw new NotFoundError("设备不存在");
             }
 
-            const updatedDevice = await ctx.prisma.device.update({
-                where: { id },
-                data: { name, host, port },
+            const data: Omit<typeof input, "id"> = {};
+            if (name) {
+                data.name = name;
+            }
+            if (host) {
+                data.host = host;
+            }
+            if (port) {
+                data.port = port;
+            }
+
+            const { index, device } = indexed;
+            const updated = { ...device, ...data };
+            await ctx.db.update(data => {
+                data.devices[index] = updated;
             });
 
-            return updatedDevice;
+            const { userId: _userId, ...rest } = device;
+
+            return rest;
         }),
 
-    remove: protectedProcedure
+    remove: procedure.protected
         .input(
             z.object({
                 id: z.string(),
@@ -82,21 +118,26 @@ export const deviceRouter = t.router({
         .mutation(async ({ input, ctx }) => {
             const { id } = input;
 
-            const device = await ctx.prisma.device.findUnique({
-                where: { id },
-            });
-            if (!device || device.userId !== ctx.session.user.id) {
+            const indexed = R.pipe(
+                ctx.db.data.devices,
+                R.map.indexed((device, index) => ({ index, device })),
+                R.find(({ device }) => device.id === id),
+            );
+            if (!indexed || indexed?.device.userId !== ctx.user.id) {
                 throw new NotFoundError("设备不存在");
             }
 
-            const removedDevice = await ctx.prisma.device.delete({
-                where: { id },
+            const { index, device } = indexed;
+            await ctx.db.update(data => {
+                data.devices.splice(index, 1);
             });
 
-            return removedDevice;
+            const { userId: _userId, ...rest } = device;
+
+            return rest;
         }),
 
-    wake: protectedProcedure
+    wake: procedure.protected
         .input(
             z.object({
                 id: z.string(),
@@ -105,38 +146,96 @@ export const deviceRouter = t.router({
         .mutation(async ({ input, ctx }) => {
             const { id } = input;
 
-            const device = await ctx.prisma.device.findUnique({
-                where: { id },
-            });
-            if (!device || device.userId !== ctx.session.user.id) {
+            const device = R.pipe(
+                ctx.db.data.devices,
+                R.find(device => device.id === id),
+            );
+            if (!device || device.userId !== ctx.user.id) {
                 throw new NotFoundError("设备不存在");
             }
+
+            const { host, port } = device;
 
             const socket = new Socket();
             socket.setTimeout(1000);
             try {
-                await socket.connect(device.host, device.port);
+                await socket.connect(host, port);
 
-                await socket.write(relayCommand.connect);
-                // await socket.read();
+                await socket.write(CONNECT_COMMAND);
+
+                const connectResult = await socket.read();
+                if (connectResult?.toString("hex") !== CONNECT_STATUS.toString("hex")) {
+                    throw new Error("吸合失败");
+                }
 
                 await setTimeout(300);
+                await socket.write(DISCONNECT_COMMAND);
 
-                await socket.write(relayCommand.disconnect);
-                // await socket.read();
+                const disconnectResult = await socket.read();
+                if (disconnectResult?.toString("hex") !== DISCONNECT_STATUS.toString("hex")) {
+                    throw new Error("断开失败");
+                }
             } catch (error) {
                 if (error instanceof Error) {
-                    throw new InternalServerError(`唤醒设备失: ${error.message}`, error.cause);
+                    throw new InternalServerError(`唤醒设备失败: ${error.message}`, error.cause);
                 } else {
                     throw new InternalServerError("唤醒设备失败", error);
                 }
             } finally {
-                await socket.write(relayCommand.disconnect);
-                // await socket.read();
-
+                await socket.write(DISCONNECT_COMMAND);
                 await socket.end();
             }
 
             return "ok";
+        }),
+
+    check: procedure.protected
+        .input(
+            z.object({
+                id: z.string(),
+            }),
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { id } = input;
+
+            const device = R.pipe(
+                ctx.db.data.devices,
+                R.find(device => device.id === id),
+            );
+            if (!device || device.userId !== ctx.user.id) {
+                throw new NotFoundError("设备不存在");
+            }
+
+            const { host, port } = device;
+
+            const socket = new Socket();
+            socket.setTimeout(1000);
+            try {
+                await socket.connect(host, port);
+
+                await socket.write(CHECK_COMMAND);
+
+                const checkResult = await socket.read();
+                const status = checkResult?.toString("hex");
+
+                if (status === CONNECT_STATUS.toString("hex")) {
+                    return "connected";
+                } else if (status === DISCONNECT_STATUS.toString("hex")) {
+                    return "disconnected";
+                } else {
+                    throw new Error("未知状态");
+                }
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new InternalServerError(
+                        `检查设备状态失败: ${error.message}`,
+                        error.cause,
+                    );
+                } else {
+                    throw new InternalServerError("检查设备状态失败", error);
+                }
+            } finally {
+                await socket.end();
+            }
         }),
 });

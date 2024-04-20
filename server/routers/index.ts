@@ -1,15 +1,17 @@
-import { t } from "@/server/init";
+import { trpc } from "../trpc";
 
 import { authRouter } from "./auth";
 import { deviceRouter } from "./device";
+import { pingRouter } from "./ping";
 import { userRouter } from "./user";
 
-export const router = t.mergeRouters(
+export const appRouter = trpc.mergeRouters(
     authRouter,
-    t.router({
+    trpc.router({
         device: deviceRouter,
         user: userRouter,
     }),
+    pingRouter,
 );
 
-export type Router = typeof router;
+export type Router = typeof appRouter;

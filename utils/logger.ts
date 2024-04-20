@@ -1,34 +1,26 @@
 import chalk from "chalk";
-import dayjs from "dayjs";
 
-const colorize = (level: "info" | "warn" | "error") => {
+const format = (level: "info" | "warn" | "error") => {
     const map = {
-        info: chalk.blue(level),
-        warn: chalk.yellow(level),
-        error: chalk.red(level),
-        default: chalk.green(level),
+        info: `${chalk.cyan(level)} `,
+        warn: `${chalk.yellow(level)} `,
+        error: `${chalk.red(level)}`,
+        default: `${chalk.green(level)}`,
     };
 
-    const colorized = map[level] || map.default;
-
-    return colorized;
+    return map[level] || map.default;
 };
 
-const createLogger =
-    (level: "info" | "warn" | "error") =>
-    (...message: any[]) => {
-        let date = "";
-        if (message.length && dayjs.isDayjs(message[0])) {
-            date = message.shift().format("YYYY-MM-DD HH:mm:ss");
-        } else {
-            date = dayjs().format("YYYY-MM-DD HH:mm:ss");
-        }
+const logger =
+    (...args1: Parameters<typeof console.log>) =>
+    (...args2: Parameters<typeof console.log>) =>
+        console.log(...args1, ...args2);
 
-        console.log(`[${chalk.green(date)}] [${colorize(level)}]:`, ...message);
-    };
+const info = format("info");
+const warn = format("warn");
+const error = format("error");
 
-export const logger = {
-    info: createLogger("info"),
-    warn: createLogger("warn"),
-    error: createLogger("error"),
-};
+export const createLogger = (prefix?: string) =>
+    prefix
+        ? { info: logger(prefix, info), warn: logger(prefix, warn), error: logger(prefix, error) }
+        : { info: logger(info), warn: logger(warn), error: logger(error) };

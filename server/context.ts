@@ -1,12 +1,11 @@
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { getServerSession, type Session } from "next-auth";
+import { db } from "@/db";
 
-// import { options } from "@/auth/options";
-import { callbacks } from "@/auth/callbacks";
-import { prisma } from "@/server/db";
+import type { UserEntity } from "@/db";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 interface CreateContextOptions {
-    session: Session | null;
+    token: string;
+    user: UserEntity;
 }
 
 /**
@@ -20,7 +19,7 @@ interface CreateContextOptions {
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
 const createInnerContext = (options: CreateContextOptions) => {
-    return { ...options, prisma };
+    return { ...options, db };
 };
 
 /**
@@ -32,8 +31,10 @@ const createInnerContext = (options: CreateContextOptions) => {
 export const createContext = async (options: CreateNextContextOptions) => {
     const { req, res } = options;
 
-    // Get the session from the server using the getServerSession wrapper function
-    const session = await getServerSession(req, res, { callbacks });
-
-    return createInnerContext({ session });
+    return createInnerContext({
+        token: req.headers.authorization || "",
+        user: { id: "", username: "", password: "" },
+    });
 };
+
+export type Context = Awaited<ReturnType<typeof createContext>>;

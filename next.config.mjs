@@ -1,19 +1,12 @@
-import AutoImport from "unplugin-auto-import/webpack";
-import { $, log } from "zx";
+import Unimport from "unimport/unplugin";
+import webpack from "webpack";
 
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
- * This is especially useful for Docker builds.
- */
-if (!process.env.SKIP_ENV_VALIDATION) {
-    $.log = entry => entry.kind !== "cmd" && log(entry);
-    await $`npx tsx ./env`;
-}
+const command = process.argv[2] || "dev";
+const isProd = process.env.NODE_ENV === "production" || command === "build" || command === "start";
+const isDev = process.env.NODE_ENV === "development" || command === "dev";
 
 /** @type {import("next").NextConfig} */
-const config = {
-    reactStrictMode: true,
-    swcMinify: true,
+const nextConfig = {
     output: "standalone",
 
     eslint: {
@@ -26,20 +19,32 @@ const config = {
 
     webpack: config => {
         config.plugins.push(
-            AutoImport({
+            Unimport.webpack({
                 dts: "./types/auto-imports.d.ts",
 
+                presets: ["react"],
+
                 imports: [
-                    "react",
-                    { react: [["*", "React"]] },
-                    { clsx: [["default", "cx"]] },
-                    { "@/env": ["isServerEnv", "isDevEnv", "isProdEnv", "env"] },
+                    { name: "default", as: "cx", from: "clsx" },
+                    { name: "*", as: "R", from: "remeda" },
                 ],
             }),
         );
+
+        config.plugins.push(
+            new webpack.DefinePlugin({
+                "import.meta.env.DEV": isDev,
+                "import.meta.env.PROD": isProd,
+                "import.meta.env.SSR": `typeof window === "undefined"`,
+            }),
+        );
+
+        config.infrastructureLogging = {
+            level: "error",
+        };
 
         return config;
     },
 };
 
-export default config;
+export default nextConfig;

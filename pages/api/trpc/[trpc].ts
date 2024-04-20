@@ -1,10 +1,12 @@
 import { createNextApiHandler } from "@trpc/server/adapters/next";
 
-import { createContext, router } from "@/server";
-import { logger } from "@/utils";
+import { appRouter, createContext } from "@/server";
+import { createLogger } from "@/utils";
+
+const logger = createLogger("[trpc-api]");
 
 export default createNextApiHandler({
-    router,
+    router: appRouter,
     createContext,
     onError: ({ path, error }) => {
         logger.error(`tRPC failed on ${path ?? "<no-path>"}: ${error.message}`);

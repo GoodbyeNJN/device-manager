@@ -1,21 +1,18 @@
 {
     "compilerOptions": {
-        "target": "ES2017",
+        "target": "ESNext",
         "module": "ESNext",
-        "moduleResolution": "Node",
+        "moduleResolution": "Bundler",
         "lib": ["ESNext", "DOM", "DOM.Iterable"],
-
         "jsx": "preserve",
         "isolatedModules": true,
         "esModuleInterop": true,
-
         "strict": true,
         "alwaysStrict": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
         "sourceMap": true,
-
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "noImplicitAny": true,
@@ -23,23 +20,32 @@
         "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
-
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "downlevelIteration": true,
-
         "pretty": true,
-
         "allowJs": true,
         "noEmit": true,
         "resolveJsonModule": true,
         "incremental": true,
-
         "baseUrl": ".",
         "paths": {
             "@/*": ["./*"]
-        }
+        },
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ]
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs"],
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.cjs",
+        "**/*.mjs",
+        ".next/types/**/*.ts"
+    ],
     "exclude": ["node_modules"]
 }

@@ -1,25 +1,21 @@
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { api } from "@/hooks";
 
-import { Modal, type ModalProps } from "./modal";
+import { Modal } from "./modal";
 
-interface Device {
-    id: string;
-    name: string;
-    host: string;
-    port: number;
-}
+import type { ModalProps } from "./modal";
+import type { ApiOutputs } from "@/hooks";
+import type { SubmitHandler } from "react-hook-form";
+
+type Device = ApiOutputs["device"]["create"];
 
 export type CreateDeviceFormValues = Omit<Device, "id">;
 
-export type ChangeDeviceFormValues = Pick<Device, "id"> &
-    Partial<Omit<Device, "id" | "name">> & { name: string | null };
-
-type DeviceItem = Omit<Device, "name"> & { name: string | null };
+export type ChangeDeviceFormValues = Pick<Device, "id"> & Partial<Omit<Device, "id">>;
 
 export interface DeviceListProps {
-    devices?: DeviceItem[];
+    devices?: Device[];
     isError: boolean;
     isLoading: boolean;
     onRefresh?: () => void;
@@ -29,7 +25,7 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
     const { setShow, onClose } = props;
 
     const { register, handleSubmit } = useForm<CreateDeviceFormValues>();
-    const { mutate, reset, isError, isLoading } = api.device.create.useMutation({
+    const { error, mutate, reset, isError, isPending } = api.device.create.useMutation({
         onSuccess() {
             setShow(false);
             onClose?.();
@@ -41,14 +37,9 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
 
     const onSubmit: SubmitHandler<CreateDeviceFormValues> = useCallback(
         values => {
-            const { name, host, port } = values;
-
-            const portNumber = Number(port);
-            if (portNumber < 1 || portNumber > 65535) {
-                return;
-            }
-
-            mutate({ name, host, port: portNumber });
+            const { name, host, port: portStr } = values;
+            const portNum = Number(portStr);
+            mutate({ name, host, port: portNum });
         },
         [mutate],
     );
@@ -61,7 +52,7 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
                         <span className="label-text">设备名</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         placeholder="请输入设备名"
                         {...register("name")}
                     />
@@ -72,7 +63,7 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
                         <span className="label-text">地址</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         placeholder="请输入地址"
                         {...register("host")}
                     />
@@ -83,7 +74,7 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
                         <span className="label-text">端口</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         type="number"
                         placeholder="请输入端口"
                         {...register("port")}
@@ -96,10 +87,10 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
                     </button>
 
                     {isError ? (
-                        <button className="btn-error btn">保存失败</button>
+                        <button className="btn btn-error">{error.message}</button>
                     ) : (
                         <button
-                            className={cx("btn-primary btn", { loading: isLoading })}
+                            className={cx("btn btn-primary", { loading: isPending })}
                             type="submit"
                         >
                             保存
@@ -111,7 +102,7 @@ export const CreateDeviceModal: React.FC<ModalProps> = props => {
     );
 };
 
-export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = props => {
+export const ChangeDeviceModal: React.FC<ModalProps & Device> = props => {
     const { setShow, onClose, id, name, host, port } = props;
 
     const { register, handleSubmit } = useForm<ChangeDeviceFormValues>();
@@ -136,14 +127,9 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
 
     const onSubmit: SubmitHandler<ChangeDeviceFormValues> = useCallback(
         values => {
-            const { name, host, port } = values;
-
-            const portNumber = Number(port);
-            if (portNumber < 1 || portNumber > 65535) {
-                return;
-            }
-
-            update.mutate({ id, name: name || undefined, host, port: portNumber });
+            const { name, host, port: portStr } = values;
+            const portNum = Number(portStr);
+            update.mutate({ id, name, host, port: portNum });
         },
         [id, update],
     );
@@ -156,8 +142,8 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                         <span className="label-text">设备id</span>
                     </label>
                     <input
-                        className="input-bordered input"
-                        defaultValue={id}
+                        className="input input-bordered"
+                        defaultValue={id || undefined}
                         disabled
                         {...register("id")}
                     />
@@ -168,7 +154,7 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                         <span className="label-text">设备名</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         placeholder="请输入设备名"
                         defaultValue={name || undefined}
                         {...register("name")}
@@ -180,9 +166,9 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                         <span className="label-text">地址</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         placeholder="请输入地址"
-                        defaultValue={host}
+                        defaultValue={host || undefined}
                         {...register("host")}
                     />
                 </div>
@@ -192,10 +178,10 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                         <span className="label-text">端口</span>
                     </label>
                     <input
-                        className="input-bordered input"
+                        className="input input-bordered"
                         type="number"
                         placeholder="请输入端口"
-                        defaultValue={port}
+                        defaultValue={port || undefined}
                         {...register("port")}
                     />
                 </div>
@@ -206,10 +192,10 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                     </button>
 
                     {remove.isError ? (
-                        <button className="btn-error btn">删除失败</button>
+                        <button className="btn btn-error">{remove.error.message}</button>
                     ) : (
                         <button
-                            className={cx("btn-error btn", { loading: remove.isLoading })}
+                            className={cx("btn btn-error", { loading: remove.isPending })}
                             type="button"
                             onClick={() => remove.mutate({ id })}
                         >
@@ -218,10 +204,10 @@ export const ChangeDeviceModal: React.FC<ModalProps & ChangeDeviceFormValues> = 
                     )}
 
                     {update.isError ? (
-                        <button className="btn-error btn">保存失败</button>
+                        <button className="btn btn-error">{update.error.message}</button>
                     ) : (
                         <button
-                            className={cx("btn-primary btn", { loading: update.isLoading })}
+                            className={cx("btn btn-primary", { loading: update.isPending })}
                             type="submit"
                         >
                             保存
@@ -237,7 +223,15 @@ export const DeviceList: React.FC<DeviceListProps> = props => {
     const { devices, isError, isLoading, onRefresh } = props;
 
     const [showDeviceModal, setShowDeviceModal] = useState(false);
-    const [currentDevice, setCurrentDevice] = useState<DeviceItem>();
+    const [currentDevice, setCurrentDevice] = useState<Device>();
+    const check = api.device.check.useMutation({
+        onSuccess() {
+            setTimeout(check.reset, 2000);
+        },
+        onError() {
+            setTimeout(check.reset, 2000);
+        },
+    });
     const wake = api.device.wake.useMutation({
         onSuccess() {
             setTimeout(wake.reset, 2000);
@@ -247,13 +241,20 @@ export const DeviceList: React.FC<DeviceListProps> = props => {
         },
     });
 
-    const onEdit = useCallback((device: DeviceItem) => {
+    const onEdit = useCallback((device: Device) => {
         setCurrentDevice(device);
         setShowDeviceModal(true);
     }, []);
 
+    const onCheck = useCallback(
+        (device: Device) => {
+            check.mutate({ id: device.id });
+        },
+        [check],
+    );
+
     const onWake = useCallback(
-        (device: DeviceItem) => {
+        (device: Device) => {
             wake.mutate({ id: device.id });
         },
         [wake],
@@ -281,7 +282,7 @@ export const DeviceList: React.FC<DeviceListProps> = props => {
                     </div>
 
                     <div className="flex-none">
-                        <button className="btn-primary btn-sm btn" onClick={onRefresh}>
+                        <button className="btn btn-primary btn-sm" onClick={onRefresh}>
                             刷新
                         </button>
                     </div>
@@ -320,21 +321,31 @@ export const DeviceList: React.FC<DeviceListProps> = props => {
                             </svg>
                         </figure>
                         <div className="card-body">
-                            <h2 className="card-title justify-center">
-                                {device.name || `${device.host}:${device.port}`}
-                            </h2>
+                            <h2 className="card-title justify-center">{device.name}</h2>
 
                             <div className="card-actions justify-center">
                                 <button className="btn" onClick={() => onEdit(device)}>
                                     修改
                                 </button>
 
+                                {check.isError ? (
+                                    <button className="btn btn-error">{check.error.message}</button>
+                                ) : check.isSuccess ? (
+                                    <button className="btn btn-success">{check.data}</button>
+                                ) : (
+                                    <button className="btn" onClick={() => onCheck(device)}>
+                                        检查
+                                    </button>
+                                )}
+
                                 {wake.isError ? (
-                                    <button className="btn-error btn">唤醒失败</button>
+                                    <button className="btn btn-error">{wake.error.message}</button>
+                                ) : wake.isSuccess ? (
+                                    <button className="btn btn-success">{wake.data}</button>
                                 ) : (
                                     <button
-                                        className={cx("btn-primary btn", {
-                                            loading: wake.isLoading,
+                                        className={cx("btn btn-primary", {
+                                            loading: wake.isPending,
                                         })}
                                         onClick={() => onWake(device)}
                                     >
@@ -351,7 +362,7 @@ export const DeviceList: React.FC<DeviceListProps> = props => {
                 show={showDeviceModal}
                 setShow={setShowDeviceModal}
                 onClose={onRefresh}
-                {...(currentDevice || { id: "", name: null })}
+                {...(currentDevice || { id: "", name: "", host: "", port: 0 })}
             />
         </>
     );

@@ -1,25 +1,13 @@
-import { type AppType } from "next/app";
-import { type Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+import { trpcClient } from "@/client";
 
-import { trpcNextClient } from "@/share/trpc";
+import type { AppType } from "next/app";
+
 import "@/styles/globals.css";
 
-export interface AppProps {
-    session?: Session | null;
-}
+const App: AppType = props => {
+    const { Component, pageProps } = props;
 
-const App: AppType<AppProps> = props => {
-    const {
-        Component,
-        pageProps: { session, ...pageProps },
-    } = props;
-
-    return (
-        <SessionProvider session={session}>
-            <Component {...pageProps} />
-        </SessionProvider>
-    );
+    return <Component {...pageProps} />;
 };
 
-export default trpcNextClient.withTRPC(App);
+export default trpcClient.withTRPC(App);

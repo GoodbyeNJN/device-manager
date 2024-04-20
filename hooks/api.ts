@@ -1,8 +1,9 @@
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+import { trpcClient } from "@/client";
 
-import { type Router } from "@/server";
+import type { Router } from "@/server";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
-export { trpcNextClient as api } from "@/share/trpc";
+export const api = trpcClient;
 
 export type ApiInputs = inferRouterInputs<Router>;
 

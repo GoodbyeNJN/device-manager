@@ -1,4 +1,4 @@
-import { Socket } from "net";
+import { Socket } from "node:net";
 
 import { PromiseDuplex } from "promise-duplex";
 
@@ -57,6 +57,11 @@ class Client<T extends Socket> extends PromiseDuplex<T> {
         }
 
         socket.setTimeout(timeout);
+    }
+
+    public async read(size?: number) {
+        const result = await this.readable.read(size);
+        return result as Buffer | undefined;
     }
 }
 
