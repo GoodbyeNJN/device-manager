@@ -1,8 +1,6 @@
-import { db } from "@/db";
-import { verify } from "@/utils";
-
 import { UnauthorizedError } from "../error";
 import { trpc } from "../trpc";
+import { verify } from "../utils";
 
 export const isAuthorized = trpc.middleware(async ({ ctx, next }) => {
     if (!ctx.token) {
@@ -15,7 +13,7 @@ export const isAuthorized = trpc.middleware(async ({ ctx, next }) => {
     }
 
     const user = R.pipe(
-        db.data.users,
+        ctx.db.data.users,
         R.find(user => user.id === res.id),
     );
     if (!user) {

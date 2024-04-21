@@ -1,15 +1,23 @@
 import dayjs from "dayjs";
 import { jwtVerify, SignJWT } from "jose";
 
+import { JWT_SECRET } from "../constants";
+
 const alg = "HS256";
 
-const secret = new TextEncoder().encode(
-    import.meta.env.PROD
-        ? process.env.JWT_SECRET
-        : "cc7e0d44fd473002f1c42167459001140ec6389b7353f8088f4d9a95f2f596f2",
-);
-
 export type VerifyResult = { isValid: false } | { isValid: true; id: string };
+
+const generateKey = () => {
+    if (!JWT_SECRET) {
+        throw new Error(
+            "JWT_SECRET is not set. Please set it in .env file or environment variables.",
+        );
+    }
+
+    const key = new TextEncoder().encode(JWT_SECRET);
+
+    return key;
+};
 
 export const sign = async (id: string, maxAge = "2h") => {
     const jwt = await new SignJWT({ user_id: id })
@@ -18,14 +26,14 @@ export const sign = async (id: string, maxAge = "2h") => {
         .setIssuer("urn:fuckwall:issuer")
         .setAudience("urn:fuckwall:audience")
         .setExpirationTime(maxAge)
-        .sign(secret);
+        .sign(generateKey());
 
     return jwt;
 };
 
 export const verify = async (jwt: string): Promise<VerifyResult> => {
     try {
-        const { payload } = await jwtVerify(jwt, secret, {
+        const { payload } = await jwtVerify(jwt, generateKey(), {
             issuer: "urn:fuckwall:issuer",
             audience: "urn:fuckwall:audience",
         });

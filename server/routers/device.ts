@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { setTimeout } from "@/utils";
-import { Socket } from "@/utils/socket";
 
 import {
     CHECK_COMMAND,
@@ -13,8 +12,9 @@ import {
 import { InternalServerError, NotFoundError } from "../error";
 import { procedure } from "../procedures";
 import { trpc } from "../trpc";
+import { Socket } from "../utils";
 
-import type { DeviceEntity } from "@/db";
+import type { DeviceEntity } from "../db";
 
 export const deviceRouter = trpc.router({
     list: procedure.protected
@@ -163,18 +163,18 @@ export const deviceRouter = trpc.router({
 
                 await socket.write(CONNECT_COMMAND);
 
-                const connectResult = await socket.read();
-                if (connectResult?.toString("hex") !== CONNECT_STATUS.toString("hex")) {
-                    throw new Error("吸合失败");
-                }
+                // const connectResult = await socket.read();
+                // if (connectResult?.toString("hex") !== CONNECT_STATUS.toString("hex")) {
+                //     throw new Error("吸合失败");
+                // }
 
                 await setTimeout(300);
                 await socket.write(DISCONNECT_COMMAND);
 
-                const disconnectResult = await socket.read();
-                if (disconnectResult?.toString("hex") !== DISCONNECT_STATUS.toString("hex")) {
-                    throw new Error("断开失败");
-                }
+                // const disconnectResult = await socket.read();
+                // if (disconnectResult?.toString("hex") !== DISCONNECT_STATUS.toString("hex")) {
+                //     throw new Error("断开失败");
+                // }
             } catch (error) {
                 if (error instanceof Error) {
                     throw new InternalServerError(`唤醒设备失败: ${error.message}`, error.cause);
@@ -215,6 +215,7 @@ export const deviceRouter = trpc.router({
 
                 await socket.write(CHECK_COMMAND);
 
+                await setTimeout(100);
                 const checkResult = await socket.read();
                 const status = checkResult?.toString("hex");
 

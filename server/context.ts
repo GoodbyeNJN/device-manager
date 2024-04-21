@@ -1,6 +1,6 @@
-import { db } from "@/db";
+import { getDb } from "./db";
 
-import type { UserEntity } from "@/db";
+import type { UserEntity } from "./db";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 interface CreateContextOptions {
@@ -18,7 +18,9 @@ interface CreateContextOptions {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-const createInnerContext = (options: CreateContextOptions) => {
+const createInnerContext = async (options: CreateContextOptions) => {
+    const db = await getDb();
+
     return { ...options, db };
 };
 
@@ -31,10 +33,12 @@ const createInnerContext = (options: CreateContextOptions) => {
 export const createContext = async (options: CreateNextContextOptions) => {
     const { req, res } = options;
 
-    return createInnerContext({
+    const context = await createInnerContext({
         token: req.headers.authorization || "",
         user: { id: "", username: "", password: "" },
     });
+
+    return context;
 };
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

@@ -1,12 +1,11 @@
 import { z } from "zod";
 
-import { sign } from "@/utils";
-
 import { ForbiddenError } from "../error";
 import { procedure } from "../procedures";
 import { trpc } from "../trpc";
+import { sign } from "../utils";
 
-import type { UserEntity } from "@/db";
+import type { UserEntity } from "../db";
 
 export const authRouter = trpc.router({
     signUp: procedure.public

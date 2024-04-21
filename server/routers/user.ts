@@ -1,7 +1,6 @@
-import { sign } from "@/utils";
-
 import { procedure } from "../procedures";
 import { trpc } from "../trpc";
+import { sign } from "../utils";
 
 export const userRouter = trpc.router({
     info: procedure.protected.query(async ({ ctx }) => {

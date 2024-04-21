@@ -8,9 +8,6 @@
 # testing
 /coverage
 
-# database
-/db/data.json
-
 # next.js
 /.next/
 /out/
@@ -41,3 +38,6 @@ next-env.d.ts
 
 # auto generated files
 /types/auto-imports.d.ts
+
+# database
+db.json
